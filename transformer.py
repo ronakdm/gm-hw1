@@ -57,9 +57,9 @@ class TransformerBlock(nn.Module):
         K = self.wk(x).view((n, p, h, k)).permute(0, 2, 3, 1)  # [n*h*k*p]
         V = self.wv(x).view((n, p, h, k)).permute(0, 2, 1, 3)  # [n*h*p*k]
 
-        # Compute attention (dot over k).
+        # Compute attention (dot over k). # Mask is [p*p]
         A = self.dropoutatt(
-            nn.Softmax(dim=3)(torch.matmul(Q, K) / math.sqrt(k))
+            nn.Softmax(dim=3)(torch.matmul(Q, K) / math.sqrt(k) + mask)
         )  # [n*h*p*p]
 
         # Compute attention * value.
