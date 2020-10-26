@@ -39,7 +39,30 @@ class TransformerBlock(nn.Module):
 
         # Hint: Writing efficient code is almost as important as writing correct code in ML.
         #       Avoid writing for-loops! Consider using the batch matrix multiplication operator torch.bmm
-        raise NotImplementedError('Implement a transformer block')
+        #  raise NotImplementedError('Implement a transformer block')
+
+        p = seq_len
+        m = batch_size
+        k = self.k  # internal representation size.
+        h = self.heads
+        d = embed_dim
+
+        # Move batch to the front. Now [m * p * d].
+        x.permute([1, 0, 2])
+
+        # Compute query, key, and value for each head.
+        # All now now [m * p * (h * k)].
+        Q = torch.reshape(self.wq(x), (m, p, h, k))
+        K = torch.reshape(self.wk(x), (m, p, h, k))
+        V = torch.reshape(self.wv(x), (m, p, h, k))
+
+        # Compute attention values (dot over k).
+        A = nn.Softmax(dim=3)(torch.matmul(Q, K) / math.sqrt(k))  # [m * h * p * p]
+        U = torch.matmul(A, V)  # [m * h * p * k]
+        U = torch.reshape(torch.sum(U, axis=2), (m, h * k))  # [m * (h * k)]
+        U = torch.reshape(self.wc(U), (m, h, d))  # Apply linear transformation.
+        U = torch.sum(U, axis=1)  # Sum across all heads.
+
 
         return out
 
