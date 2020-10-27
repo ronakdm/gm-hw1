@@ -52,6 +52,7 @@ def evaluate(data):
 
 for i, (x, y) in enumerate(train_loader):
     x, y = x.permute(1, 0).to(device), y.permute(1, 0).to(device)
-    y_ = model.forward(x)
+    y_ = model(x)
     val_loss = evaluate(valid_data)
-    break
+    if i == 3:
+        break

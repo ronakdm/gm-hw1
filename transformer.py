@@ -50,17 +50,15 @@ class TransformerBlock(nn.Module):
         h = self.heads
 
         # Move batch to the front. Now [n*p*d].
-        x = x.permute(1, 0, 2)
+        x_ = x.permute(1, 0, 2)
 
         # Compute query, key, and value for each head.
-        Q = self.wq(x).view((n, p, h, k)).permute(0, 2, 1, 3)  # [n*h*p*k]
-        K = self.wk(x).view((n, p, h, k)).permute(0, 2, 3, 1)  # [n*h*k*p]
-        V = self.wv(x).view((n, p, h, k)).permute(0, 2, 1, 3)  # [n*h*p*k]
+        Q = self.wq(x_).view((n, p, h, k)).permute(0, 2, 1, 3)  # [n*h*p*k]
+        K = self.wk(x_).view((n, p, h, k)).permute(0, 2, 3, 1)  # [n*h*k*p]
+        V = self.wv(x_).view((n, p, h, k)).permute(0, 2, 1, 3)  # [n*h*p*k]
 
         # Compute attention (dot over k). # Mask is [p*p]
         dot_prod = torch.matmul(Q, K) / math.sqrt(k)
-        print(dot_prod.shape)
-        print(mask.shape)
         A = self.dropoutatt(nn.Softmax(dim=3)(dot_prod + mask))  # [n*h*p*p]
 
         # Compute attention * value.
@@ -68,7 +66,7 @@ class TransformerBlock(nn.Module):
         u = u.permute(0, 2, 1, 3).reshape((n, p, h * k))  # [n*p*(h*k)]
         u = self.wc(u)  # [n*p*d]
 
-        u = self.layernorm1(self.dropoutfc(u) + x)
+        u = self.layernorm1(self.dropoutfc(u) + x_)
         z = self.w2(self.dropout1(F.relu(self.w1(u))))
         out = self.layernorm2(self.dropout2(z) + u)
 
