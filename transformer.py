@@ -53,9 +53,9 @@ class TransformerBlock(nn.Module):
         x_ = x.permute(1, 0, 2)
 
         # Compute query, key, and value for each head.
-        Q = self.wq(x_).reshape((n, p, h, k)).permute(0, 2, 1, 3)  # [n*h*p*k]
-        K = self.wk(x_).reshape((n, p, h, k)).permute(0, 2, 3, 1)  # [n*h*k*p]
-        V = self.wv(x_).reshape((n, p, h, k)).permute(0, 2, 1, 3)  # [n*h*p*k]
+        Q = self.wq(x_).view((n, p, h, k)).permute(0, 2, 1, 3)  # [n*h*p*k]
+        K = self.wk(x_).view((n, p, h, k)).permute(0, 2, 3, 1)  # [n*h*k*p]
+        V = self.wv(x_).view((n, p, h, k)).permute(0, 2, 1, 3)  # [n*h*p*k]
 
         # Compute attention (dot over k). # Mask is [p*p]
         dot_prod = torch.matmul(Q, K) / math.sqrt(k)
