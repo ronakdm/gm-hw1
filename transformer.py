@@ -59,8 +59,6 @@ class TransformerBlock(nn.Module):
 
         # Compute attention (dot over k). # Mask is [p*p]
         dot_prod = torch.matmul(Q, K) / math.sqrt(k)
-        print("dot_prod Dimensions", dot_prod.shape)
-        print("Mask Dimensions", mask.shape)
         A = self.dropoutatt(nn.Softmax(dim=3)(dot_prod + mask))  # [n*h*p*p]
         # A = self.dropoutatt(nn.Softmax(dim=3)(dot_prod))
 
