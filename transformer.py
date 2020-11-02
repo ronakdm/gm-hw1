@@ -60,7 +60,6 @@ class TransformerBlock(nn.Module):
         # Compute attention (dot over k). # Mask is [p*p]
         dot_prod = torch.matmul(Q, K) / math.sqrt(k)
         A = self.dropoutatt(nn.Softmax(dim=3)(dot_prod + mask))  # [n*h*p*p]
-        # A = self.dropoutatt(nn.Softmax(dim=3)(dot_prod))
 
         # Compute attention * value.
         u = torch.matmul(A, V)  # [n*h*p*k]
@@ -71,7 +70,7 @@ class TransformerBlock(nn.Module):
         z = self.w2(self.dropout1(F.relu(self.w1(u))))
         out = self.layernorm2(self.dropout2(z) + u)
 
-        return out
+        return out.permute(1, 0, 2)
 
 
 class Transformer(nn.Module):
